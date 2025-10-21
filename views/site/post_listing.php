@@ -18,18 +18,18 @@ echo ListView::widget([
         'dataProvider' => $dataProvider,
         'itemView' => 'post_view',
         'itemOptions' => [
-        'tag' => 'li',
-        'class' => 'list-group-item',
-    ],
-        'pager' => [
-        'class' => LinkPager::class,
-        'prevPageLabel' => false,
-        'nextPageLabel' => false,
-        'options' => [
-            'class' => 'pagination custom-pagination',
+            'tag' => 'li',
+            'class' => 'list-group-item',
         ],
-        'linkOptions' => ['class' => 'page-link custom-link'],
-    ],
+        'pager' => [
+            'class' => LinkPager::class,
+            'prevPageLabel' => false,
+            'nextPageLabel' => false,
+            'options' => [
+                'class' => 'pagination custom-pagination',
+            ],
+            'linkOptions' => ['class' => 'page-link custom-link'],
+        ],
 ]);
 
 ?>
