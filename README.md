@@ -10,14 +10,14 @@
 
 ### Пакеты, которые использовал:
 ~~~
-composer require ezyang/htmlpurifier<br>
-composer require nesbot/carbon<br>
-composer require symfony/intl<br>
+composer require ezyang/htmlpurifier
+composer require nesbot/carbon
+composer require symfony/intl
 ~~~
 
 ### Сторонний хелпер для IP адресов:
 ~~~
-helpers/IpHelper.php</b>
+helpers/IpHelper.php
 ~~~
 
 ### Рекомендации и пояснения:
