@@ -7,8 +7,8 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
+use app\models\Post;
+use app\models\PostForm;
 
 class SiteController extends Controller
 {
@@ -55,74 +55,128 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
-     *
-     * @return string
+     * Отображение главной
+     * @return Response|string
      */
     public function actionIndex()
     {
-        return $this->render('index');
-    }
 
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+        $posts = Post::find()->with('author')->asArray()->all();
+
+        $modelPostCreate = new PostForm();
+
+        if ($modelPostCreate->load(Yii::$app->request->post())) {
+            if ($modelPostCreate->save()) {
+                $this->sendRegisterMail();
+                return $this->refresh();
+            }
         }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
+        return $this->render('index', [
+            'modelPost' => $modelPostCreate,
+            'posts' => $posts,
         ]);
     }
 
     /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
+     * Отображение обновления.
      *
      * @return Response|string
      */
-    public function actionContact()
+    public function actionUpdate($link)
     {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
 
-            return $this->refresh();
+        $post = Post::find()->with('author')->andWhere(['and',
+            ['link' => $link],
+            ['is_deleted' => 0],
+            ['>=', 'created_at', time() - POST::TIME_EDIT]
+        ])->one();
+
+        if (Yii::$app->request->post()) {
+            $post->content = Yii::$app->request->post()['Post']['content'];
+            $post->updated_at = time();
         }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
+
+        if ($post->save()) {
+            return $this->render('update', [
+                'model' => $post,
+            ]);
+        } else {
+            return $this->render('error');
+        }
     }
 
     /**
-     * Displays about page.
+     * Отображение страницы удаления
      *
+     * @return Response|string
+     */
+    public function actionDelete($link)
+    {
+        $post = Post::find()->andWhere(['and',
+            ['link' => $link],
+            ['is_deleted' => 0],
+            ['>=', 'created_at', time() - POST::TIME_DELETE]
+        ])->one();
+        if ($post) {
+            return $this->render('delete', [
+                'post' => $post,
+            ]);
+        } else {
+            return $this->render('error');
+        }
+    }
+
+    /**
+     * Метод мнимого удаления
      * @return string
+     * @throws \yii\db\Exception
      */
-    public function actionAbout()
+    public function actionRemove()
     {
-        return $this->render('about');
+        if (Yii::$app->request->isPost) {
+
+            $link   = Yii::$app->request->post('link');
+            $post   = Post::findOne(['link' => $link]);
+            $isTime = ($post->created_at >= (time() - POST::TIME_DELETE));
+
+            if ($post && $isTime) {
+                $post->is_deleted = 1;
+                if($post->save()) {
+                    return json_encode(['status' => 'success'], JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                return json_encode(['status' => false]);
+            }
+        } else {
+            return json_encode(['status' => false]);
+        }
     }
+
+    /*
+     * Метод отправки регистрационного письма
+     */
+    private function sendRegisterMail(): void
+    {
+        $lastRecord = Post::find()
+            ->orderBy(['id' => SORT_DESC])
+            ->with('author')
+            ->one();
+        $linkUpdate = 'http://xyhzxfvwpp/web/update?link='.$lastRecord->link;;
+        $body = 'Cсылка для редактирования: '. $linkUpdate . '<br>';
+
+        $linkDelete = 'http://xyhzxfvwpp/web/delete?link='.$lastRecord->link;
+        $body .= 'Ссылка для удаления: '. $linkDelete . '<br>';
+
+
+
+        Yii::$app->mailer->compose()
+            ->setFrom('example@example.com')
+            ->setTo($lastRecord->author->email)
+            ->setSubject('Оправка сообщения StoryValut')
+            ->setHtmlBody($body)
+            ->setCharset('utf-8')
+            ->send();
+    }
+
 }

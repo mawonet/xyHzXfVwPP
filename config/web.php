@@ -41,15 +41,36 @@ $config = [
                 ],
             ],
         ],
+        'i18n' => [
+            'translations' => [
+                'app*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@app/messages',
+                    'fileMap' => [
+                        'app' => 'app.php',
+                    ],
+                ],
+            ],
+        ],
         'db' => $db,
-        /*
+
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'defaultRoute' => 'site/index',
+                'delete' => 'site/delete',
+                'delete/<link:\d+>/<approve:\d+>' => 'site/delete',
+                [
+                    'pattern' => 'site/remove',
+                    'route' => 'site/remove',
+                    'verb' => ['POST'],
+                ],
+                'update' => 'site/update',
+
             ],
         ],
-        */
+
     ],
     'params' => $params,
 ];

@@ -1,0 +1,42 @@
+.list-group {
+    margin-bottom: 20px;
+}
+
+.list-group-item {
+    padding: 15px;
+    border: 1px solid #ddd;
+}
+
+/* Стили для пагинации */
+.custom-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.custom-pagination .page-item {
+    margin: 0 5px;
+}
+
+.custom-pagination .page-link {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    color: #333;
+    text-decoration: none;
+}
+
+.custom-pagination .page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.custom-pagination .page-link:hover {
+    background-color: #f8f9fa;
+    border-color: #6c757d;
+}
+
+.pagination .disabled > * {
+    display: none !important;
+}
